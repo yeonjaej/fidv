@@ -2,15 +2,15 @@
 
 # to test space charge boundary
 
-root -l
-.L cutflow.C
-sce()
+root -l\n
+.L cutflow.C\n
+sce()\n
 
 
 
 # to test fiducial volume 
 
-root -l
-.L cutflow.C
-cuts()
+root -l\n
+.L cutflow.C\n
+cuts()\n
 
