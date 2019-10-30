@@ -1,0 +1,126 @@
+#include <TGeometry.h>
+
+bool is_contained(Double_t cut, TVector3 pt){
+
+  //Double_t cut = 5.;
+
+  Double_t xmin = cut;
+  Double_t xmax = 256-cut;
+  Double_t ymin = -117+cut;
+  Double_t ymax = 117-cut;
+  Double_t zmin = cut;
+  Double_t zmax = 1036-cut;
+
+  //cout << "xmin "<< xmin << "xmax "<<xmax << "ymin " << ymin <<"ymax "<<ymax  << "zmin "<<zmin <<"zmax "<<zmax <<endl;
+
+  //  cout << "pt.X()<<endl;
+
+  bool x_contain = (xmin < pt.X()) && (pt.X() < xmax);
+  bool y_contain = (ymin < pt.Y()) && (pt.Y() < ymax);
+  bool z_contain = (zmin < pt.Z()) && (pt.Z() < zmax);
+
+  //cout << "x contain"<< x_contain << endl; 
+  //cout << "y contain"<<y_contain << endl;
+  //cout << "z contain"<<z_contain << endl;
+  return (x_contain && y_contain && z_contain);
+    // (reco_vertex_x > 5 && reco_vertex_x < 256-5 && reco_vertex_y > -117+5 && reco_vertex_y < 117-5 && reco_vertex_z > 5 && reco_vertex_z < 1036-5)
+
+}
+
+bool is_contained_scb(Double_t cut, TVector3 pt){
+
+  TGeoManager *geom = new TGeoManager("simple1", "Simple geometry");
+
+  if (!is_contained(0., pt)) return 0; // is it in active volume?
+
+  Int_t z_idx = (Int_t)pt.Z()/100;
+
+  Int_t z_idx_YX = z_idx;//YX-view effective z index, it is only different for z > 10m area, where we want to appliy 9m<z<10m YX boundary, still need to keep the original z_idx bc it's needed in ZX-view
+
+  if (z_idx_YX==10) z_idx_YX-=1;
+
+  Double_t YX_TOP_y1_array     = 116.;
+  Double_t YX_TOP_x1_array[11] = {0., 150.00, 132.56, 122.86, 119.46, 114.22, 110.90, 115.85, 113.48, 126.36, 144.21};
+  Double_t YX_TOP_y2_array[11] = {0., 110.00, 108.14, 106.77, 105.30, 103.40, 102.18, 101.76, 102.27, 102.75, 105.10};
+  Double_t YX_TOP_x2_array = 256.;
+    
+  Double_t YX_BOT_y1_array     = -115.;
+  Double_t YX_BOT_x1_array[11] = {0., 115.71, 98.05, 92.42, 91.14, 92.25, 85.38, 78.19, 74.46, 78.86, 108.90};
+  Double_t YX_BOT_y2_array[11] = {0., -101.72, -99.46, -99.51, -100.43, -99.55, -98.56, -98.00, -98.30, -99.32, -104.20};
+  Double_t YX_BOT_x2_array = 256.;
+
+  Double_t tbi = -10000.; //means to be initialized
+  
+  Double_t ptX[6] = {0., tbi, YX_TOP_x2_array, YX_BOT_x2_array, tbi, 0.};
+  Double_t ptY[6] = {YX_TOP_y1_array, YX_TOP_y1_array, tbi, tbi, YX_BOT_y1_array, YX_BOT_y1_array};
+
+  TGeoPolygon *polyXY = new TGeoPolygon(6);
+
+  ptX[1] = YX_TOP_x1_array[z_idx_YX+1];
+  ptX[4] = YX_BOT_x1_array[z_idx_YX+1];
+  ptY[2] = YX_TOP_y2_array[z_idx_YX+1];
+  ptY[3] = YX_BOT_y2_array[z_idx_YX+1];
+
+  polyXY->SetXY(ptX,ptY);
+  polyXY->FinishPolygon();
+  Double_t testpt[2] = {pt.X(), pt.Y()};
+
+  cout << "is testpt ("<< pt.X()<<", "<<pt.Y()<<") contrained? "<<  polyXY->Contains(testpt)<<endl;
+  cout << "area ? " << polyXY->Area()<< endl;
+
+  polyXY->Draw();    
+  
+  Bool_t XY_contain = polyXY->Contains(testpt);
+
+  if(0<z_idx && z_idx<10) return XY_contain;
+
+  // if z_idx==0 or z_idx==10, they need xz view,  
+
+  /// ZX view has Y dependence: Y sub-range from -116 to 116cm per 24cm
+  Double_t ZX_Up_z1_array = 0.;
+  Double_t ZX_Up_x1_array = 120.;
+  Double_t ZX_Up_z2_array = 11.;
+  Double_t ZX_Up_x2_array = 256.;//upstream
+    
+  Double_t ZX_Dw_z1_array     = 1037.;
+  Double_t ZX_Dw_x1_array[11] = {0., 120.00, 115.24, 108.50, 110.67, 120.90, 126.43, 140.51, 157.15, 120.00, 120.00};
+  Double_t ZX_Dw_z2_array[11] = {0., 1029.00, 1029.12, 1027.21, 1026.01, 1024.91, 1025.27, 1025.32, 1027.61, 1026.00, 1026.00};
+  Double_t ZX_Dw_x2_array     = 256.;//downstream
+
+  Int_t y_idx = (pt.Y()+116.)/24;
+  if(y_idx<0 || y_idx>9) return 0;
+
+  Bool_t ZX_contain = false;
+
+  if(z_idx==0){
+    Double_t ptX_Up[5] = {0., ZX_Up_x1_array, ZX_Up_x2_array, ZX_Up_x2_array, 0};
+    Double_t ptZ_Up[5] = {0.,0.,ZX_Up_z2_array, 100., 100.};
+
+    TGeoPolygon *polyXZ_Up = new TGeoPolygon(5);
+    polyXZ_Up->SetXY(ptX_Up,ptZ_Up);
+    polyXZ_Up->FinishPolygon();
+
+    Double_t testpt_Up[2] = {pt.X(), pt.Z()};
+    ZX_contain = polyXZ_Up->Contains(testpt_Up);
+  }
+
+  else if (z_idx==10){
+    Double_t ptX_Dw[5] = {0.,256., 256., tbi, 0.};
+    Double_t ptZ_Dw[5] = {1000.,1000.,tbi,1037., 1037.};
+
+    ptX_Dw[3] = ZX_Dw_x1_array[y_idx+1];
+    ptZ_Dw[2] = ZX_Dw_z2_array[y_idx+1];
+
+    TGeoPolygon *polyXZ_Dw = new TGeoPolygon(5);
+    polyXZ_Dw->SetXY(ptX_Dw,ptZ_Dw);
+    polyXZ_Dw->FinishPolygon();
+
+    Double_t testpt_Dw[2] = {pt.X(), pt.Z()};
+    ZX_contain = polyXZ_Dw->Contains(testpt_Dw);
+  }
+
+
+  return (XY_contain && ZX_contain);
+  // (reco_vertex_x > 5 && reco_vertex_x < 256-5 && reco_vertex_y > -117+5 && reco_vertex_y < 117-5 && reco_vertex_z > 5 && reco_vertex_z < 1036-5)         
+
+}
