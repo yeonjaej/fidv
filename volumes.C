@@ -56,10 +56,10 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   polyXY->FinishPolygon();
   Double_t testpt[2] = {pt.X(), pt.Y()};
 
-  cout << "is testpt ("<< pt.X()<<", "<<pt.Y()<<") contrained? "<<  polyXY->Contains(testpt)<<endl;
-  cout << "area ? " << polyXY->Area()<< endl;
+  //cout << "is testpt ("<< pt.X()<<", "<<pt.Y()<<") contrained? "<<  polyXY->Contains(testpt)<<endl;
+  //cout << "area ? " << polyXY->Area()<< endl;
 
-  polyXY->Draw();    
+  //polyXY->Draw();    
   
   Bool_t XY_contain = polyXY->Contains(testpt);
 
@@ -115,6 +115,6 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
 
 
   return (XY_contain && ZX_contain);
-  // (reco_vertex_x > 5 && reco_vertex_x < 256-5 && reco_vertex_y > -117+5 && reco_vertex_y < 117-5 && reco_vertex_z > 5 && reco_vertex_z < 1036-5)         
+
 
 }
