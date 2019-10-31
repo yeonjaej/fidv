@@ -14,6 +14,16 @@ root -l
 cuts()
 ```
 
+cuts() can take input variables,
+one can also do
+(5cm fid. cut, 0cm trk end cut, deltarad file?, save cutflow to pdf?)
+```
+root -l
+.L cutflow.C
+cuts(5., 0., true, false)
+```
+
+
 # to throw random vertices and count them
 ```
 root -l
