@@ -9,6 +9,8 @@
 
 #include "volumes.C"
 
+#include "TRandom3.h"
+
 using namespace std;
 
 TFile *f_ncdeltarad = new TFile("ncdeltarad_overlay_run1_v19.4.root");
@@ -29,6 +31,43 @@ TTree* tree_ncpi0 = (TTree*)dir_ncpi0->Get("vertex_tree");
 
 
 //bool is_contained(Double_t cut, TVector3 pt);
+
+void random_vtx(){
+  TRandom3 *r3=new TRandom3();
+  r3->SetSeed(0);
+
+  Double_t count_5cm = 0.;
+  Double_t count_scb = 0.;
+  Double_t count_act = 0.;
+  Double_t count_10cm = 0.;
+
+  TVector3 pt(40., 40., 50.);
+
+  Int_t tot = 100000;
+
+  for (Int_t i = 0; i < tot; i++){
+    //x btw 0,400
+    Double_t x = r3->Rndm();
+    x*=400.;
+    Double_t y = r3->Rndm();
+    y*=400.;
+    y-=200.;
+    Double_t z = r3->Rndm();
+    z*=2000.;
+    z-=400.;
+    
+    pt.SetXYZ(x,y,z);
+
+    if (is_contained(10.,pt)) count_10cm+=1.;
+    if (is_contained(5.,pt)) count_5cm+=1.;
+    if (is_contained_scb(0.,pt)) count_scb+=1.;
+    if (is_contained(0.,pt)) count_act+=1.;
+  }
+  cout << "total points: " << tot << " , active vol: "<< count_act <<" , 5cm fid : " << count_5cm <<" , 10cm fid : " << count_10cm << " , scb : " << count_scb << endl; 
+  cout << "total points: " << tot << " , active vol : " <<(Double_t)count_act/tot<< " , 5cm fid : " <<(Double_t)count_5cm/tot << " , 10cm fid : " <<(Double_t)count_10cm/tot << " , scb : " << (Double_t)count_scb/tot << endl;
+  //gRandom= r3;
+
+}
 
 void cuts(Double_t fid_cut, Double_t trk_cut, Bool_t isdelta);
 
@@ -114,7 +153,7 @@ Double_t cuts(Double_t fid_cut, Double_t trk_cut, Bool_t isdelta, Bool_t plots){
 
   char *histname = new char[100];
   sprintf(histname,"h_cuts_vtx_%.1fcm_trkend_%.1fcm",fid_cut,trk_cut);
-  TH1F *h_cuts= new TH1F("h_cuts",histname,6,0,6);
+  TH1F *h_cuts= new TH1F("h_cuts",histname,7,0,7);
 
   char *binname = new char[100];
   char *filename = new char[100];
@@ -150,13 +189,19 @@ Double_t cuts(Double_t fid_cut, Double_t trk_cut, Bool_t isdelta, Bool_t plots){
       sprintf(binname,"vtx_%1fcm",fid_cut);
       h_cuts->GetXaxis()->SetBinLabel(5,binname);
     }
-    else continue;
+    if(is_contained_scb(0.,reco_vertex_vec)){
+      h_cuts->Fill(5);
+      //sprintf(binname,"vtx_%1fcm",fid_cut);
+      h_cuts->GetXaxis()->SetBinLabel(6,"vtx_in_scb");
+    }
+    //    else 
+    continue;
 
     TVector3 reco_track_end_vec(reco_track_endx->at(0), reco_track_endy->at(0), reco_track_endz->at(0));
     if(is_contained(trk_cut,reco_track_end_vec)){
-      h_cuts->Fill(5);
+      h_cuts->Fill(6);
       sprintf(binname,"trk_end_%1fcm",trk_cut);
-      h_cuts->GetXaxis()->SetBinLabel(6,binname);
+      h_cuts->GetXaxis()->SetBinLabel(7,binname);
     }
     else continue;
 
@@ -178,8 +223,8 @@ Double_t cuts(Double_t fid_cut, Double_t trk_cut, Bool_t isdelta, Bool_t plots){
   sprintf(binname,"vtx_%.1fcm_%.3f",fid_cut,h_cuts->GetBinContent(5)/(Double_t)tpcut);
   h_cuts->GetXaxis()->SetBinLabel(5,binname);
 
-  sprintf(binname,"trkend_%.1fcm_%.3f",trk_cut,h_cuts->GetBinContent(6)/(Double_t)tpcut);
-  h_cuts->GetXaxis()->SetBinLabel(6,binname);
+  sprintf(binname,"trkend_%.1fcm_%.3f",trk_cut,h_cuts->GetBinContent(7)/(Double_t)tpcut);
+  h_cuts->GetXaxis()->SetBinLabel(7,binname);
 
   if(isdelta)
   sprintf(filename,"deltarad_cutflow_vtx_%.0fcm_trkend_%.0fcm.pdf",fid_cut,trk_cut);

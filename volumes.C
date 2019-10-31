@@ -2,28 +2,19 @@
 
 bool is_contained(Double_t cut, TVector3 pt){
 
-  //Double_t cut = 5.;
-
+  // these numbers from /cvmfs/uboone.opensciencegrid.org/products/ubcore/v08_00_00_23/gdml/microboonevX.gdml "TPCActive"
   Double_t xmin = cut;
-  Double_t xmax = 256-cut;
-  Double_t ymin = -117+cut;
-  Double_t ymax = 117-cut;
+  Double_t xmax = 256.35-cut;
+  Double_t ymin = -116.5+cut;
+  Double_t ymax = 116.5-cut;
   Double_t zmin = cut;
-  Double_t zmax = 1036-cut;
-
-  //cout << "xmin "<< xmin << "xmax "<<xmax << "ymin " << ymin <<"ymax "<<ymax  << "zmin "<<zmin <<"zmax "<<zmax <<endl;
-
-  //  cout << "pt.X()<<endl;
+  Double_t zmax = 1036.8-cut;
 
   bool x_contain = (xmin < pt.X()) && (pt.X() < xmax);
   bool y_contain = (ymin < pt.Y()) && (pt.Y() < ymax);
   bool z_contain = (zmin < pt.Z()) && (pt.Z() < zmax);
 
-  //cout << "x contain"<< x_contain << endl; 
-  //cout << "y contain"<<y_contain << endl;
-  //cout << "z contain"<<z_contain << endl;
   return (x_contain && y_contain && z_contain);
-    // (reco_vertex_x > 5 && reco_vertex_x < 256-5 && reco_vertex_y > -117+5 && reco_vertex_y < 117-5 && reco_vertex_z > 5 && reco_vertex_z < 1036-5)
 
 }
 
@@ -49,7 +40,7 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   Double_t YX_BOT_y2_array[11] = {0., -101.72, -99.46, -99.51, -100.43, -99.55, -98.56, -98.00, -98.30, -99.32, -104.20};
   Double_t YX_BOT_x2_array = 256.;
 
-  Double_t tbi = -10000.; //means to be initialized
+  Double_t tbi = -10000.; //means "to be initialized"
   
   Double_t ptX[6] = {0., tbi, YX_TOP_x2_array, YX_BOT_x2_array, tbi, 0.};
   Double_t ptY[6] = {YX_TOP_y1_array, YX_TOP_y1_array, tbi, tbi, YX_BOT_y1_array, YX_BOT_y1_array};
@@ -88,6 +79,9 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   Double_t ZX_Dw_x2_array     = 256.;//downstream
 
   Int_t y_idx = (pt.Y()+116.)/24;
+  
+  if (pt.Y()<-116. && pt.Y()>-116.5) y_idx = 0; //just the 0.5cm 
+
   if(y_idx<0 || y_idx>9) return 0;
 
   Bool_t ZX_contain = false;
@@ -105,8 +99,8 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   }
 
   else if (z_idx==10){
-    Double_t ptX_Dw[5] = {0.,256., 256., tbi, 0.};
-    Double_t ptZ_Dw[5] = {1000.,1000.,tbi,1037., 1037.};
+    Double_t ptX_Dw[5] = {0.,ZX_Dw_x2_array, ZX_Dw_x2_array, tbi, 0.};
+    Double_t ptZ_Dw[5] = {1000.,1000.,tbi,ZX_Dw_z1_array, ZX_Dw_z1_array};
 
     ptX_Dw[3] = ZX_Dw_x1_array[y_idx+1];
     ptZ_Dw[2] = ZX_Dw_z2_array[y_idx+1];
