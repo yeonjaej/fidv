@@ -13,3 +13,10 @@ root -l
 .L cutflow.C
 cuts()
 ```
+
+# to throw random vertices and count them
+```
+root -l
+.L cutflow.C
+random_vtx()
+```
