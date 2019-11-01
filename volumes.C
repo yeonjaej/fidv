@@ -1,4 +1,5 @@
 #include <TGeometry.h>
+#include <params.C>
 
 bool is_contained(Double_t cut, TVector3 pt){
 
@@ -18,9 +19,42 @@ bool is_contained(Double_t cut, TVector3 pt){
 
 }
 
+bool load_scb(vector<TGeoPolygon*>& zpolygons){
+  TGeoManager *geom = new TGeoManager("save scb", "save scb");
+  
+  cout << "size of " << zpolygons.size() << endl;
+  Double_t tbi = -10000.; //means "to be initialized"                                                                                                                                
+  //torso
+  Double_t ptX[6] = {0., tbi, YX_TOP_x2_array, YX_BOT_x2_array, tbi, 0.};
+  Double_t ptY[6] = {YX_TOP_y1_array, YX_TOP_y1_array, tbi, tbi, YX_BOT_y1_array, YX_BOT_y1_array};
+
+  TGeoPolygon *polyXY = new TGeoPolygon(6);
+
+  for (Int_t z_idx_YX=0; z_idx_YX<10; z_idx_YX++) {
+    ptX[1] = YX_TOP_x1_array[z_idx_YX+1];
+    ptX[4] = YX_BOT_x1_array[z_idx_YX+1];
+    ptY[2] = YX_TOP_y2_array[z_idx_YX+1];
+    ptY[3] = YX_BOT_y2_array[z_idx_YX+1];
+    polyXY->SetXY(ptX,ptY);
+    polyXY->FinishPolygon();
+  zpolygons.push_back(polyXY);
+  }
+
+
+  cout << "size of " <<zpolygons.size() << endl;
+  return 0;
+
+
+}
+bool is_contained_scb(Double_t cut, TVector3 pt);
+
+bool is_contained_scb(TVector3 pt){
+  return is_contained_scb(0., pt);
+}
+
 bool is_contained_scb(Double_t cut, TVector3 pt){
 
-  TGeoManager *geom = new TGeoManager("simple1", "Simple geometry");
+  //TGeoManager *geom = new TGeoManager("simple1", "Simple geometry");
 
   if (!is_contained(0., pt)) return 0; // is it in active volume?
 
@@ -29,7 +63,7 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   Int_t z_idx_YX = z_idx;//YX-view effective z index, it is only different for z > 10m area, where we want to appliy 9m<z<10m YX boundary, still need to keep the original z_idx bc it's needed in ZX-view
 
   if (z_idx_YX==10) z_idx_YX-=1;
-
+  /*
   Double_t YX_TOP_y1_array     = 116.;
   Double_t YX_TOP_x1_array[11] = {0., 150.00, 132.56, 122.86, 119.46, 114.22, 110.90, 115.85, 113.48, 126.36, 144.21};
   Double_t YX_TOP_y2_array[11] = {0., 110.00, 108.14, 106.77, 105.30, 103.40, 102.18, 101.76, 102.27, 102.75, 105.10};
@@ -39,11 +73,11 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   Double_t YX_BOT_x1_array[11] = {0., 115.71, 98.05, 92.42, 91.14, 92.25, 85.38, 78.19, 74.46, 78.86, 108.90};
   Double_t YX_BOT_y2_array[11] = {0., -101.72, -99.46, -99.51, -100.43, -99.55, -98.56, -98.00, -98.30, -99.32, -104.20};
   Double_t YX_BOT_x2_array = 256.;
-
+  */
   Double_t tbi = -10000.; //means "to be initialized"
   
-  Double_t ptX[6] = {0., tbi, YX_TOP_x2_array, YX_BOT_x2_array, tbi, 0.};
-  Double_t ptY[6] = {YX_TOP_y1_array, YX_TOP_y1_array, tbi, tbi, YX_BOT_y1_array, YX_BOT_y1_array};
+  Double_t ptX[6] = {0.+cut, tbi, YX_TOP_x2_array-cut, YX_BOT_x2_array-cut, tbi, 0.+cut};
+  Double_t ptY[6] = {YX_TOP_y1_array-cut, YX_TOP_y1_array-cut, tbi, tbi, YX_BOT_y1_array+cut, YX_BOT_y1_array+cut};
 
   TGeoPolygon *polyXY = new TGeoPolygon(6);
 
@@ -87,8 +121,8 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   Bool_t ZX_contain = false;
 
   if(z_idx==0){
-    Double_t ptX_Up[5] = {0., ZX_Up_x1_array, ZX_Up_x2_array, ZX_Up_x2_array, 0};
-    Double_t ptZ_Up[5] = {0.,0.,ZX_Up_z2_array, 100., 100.};
+    Double_t ptX_Up[5] = {0.+cut, ZX_Up_x1_array, ZX_Up_x2_array-cut, ZX_Up_x2_array-cut, 0+cut};
+    Double_t ptZ_Up[5] = {0.+cut,0.+cut,ZX_Up_z2_array, 100., 100.};
 
     TGeoPolygon *polyXZ_Up = new TGeoPolygon(5);
     polyXZ_Up->SetXY(ptX_Up,ptZ_Up);
@@ -99,8 +133,8 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
   }
 
   else if (z_idx==10){
-    Double_t ptX_Dw[5] = {0.,ZX_Dw_x2_array, ZX_Dw_x2_array, tbi, 0.};
-    Double_t ptZ_Dw[5] = {1000.,1000.,tbi,ZX_Dw_z1_array, ZX_Dw_z1_array};
+    Double_t ptX_Dw[5] = {0.+cut,ZX_Dw_x2_array-cut, ZX_Dw_x2_array-cut, tbi, 0.+cut};
+    Double_t ptZ_Dw[5] = {1000.,1000.,tbi,ZX_Dw_z1_array-cut, ZX_Dw_z1_array-cut};
 
     ptX_Dw[3] = ZX_Dw_x1_array[y_idx+1];
     ptZ_Dw[2] = ZX_Dw_z2_array[y_idx+1];

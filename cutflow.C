@@ -15,24 +15,32 @@ using namespace std;
 
 TFile *f_ncdeltarad = new TFile("ncdeltarad_overlay_run1_v19.4.root");
 TFile *f_ncpi0 = new TFile("ncpi0_overlay_run1_v19.4.root");
-//TFile *= new TFile(".root");
-//TFile *= new TFile(".root");
-//TFile *= new TFile(".root");
+
 TDirectory* dir_ncdeltarad = (TDirectory*)f_ncdeltarad->Get("singlephoton");
 TDirectory* dir_ncpi0 = (TDirectory*)f_ncpi0->Get("singlephoton");
 
 TTree* tree_ncdeltarad = (TTree*)dir_ncdeltarad->Get("vertex_tree");
 TTree* tree_ncpi0 = (TTree*)dir_ncpi0->Get("vertex_tree");
 
-//Float_t Pion_E_2g, Pion_E_1g;
-//Int_t ev_2g, ev_1g;
-
-//tree_BNB_2g->SetBranchAddress("mctruch_exiting_pi0_E",&Pion_E_2g);
-
-
-//bool is_contained(Double_t cut, TVector3 pt);
 
 void random_vtx(){
+
+  TH2D * totalXY = new TH2D ("totalXY","totalXY",400,0.,400.,400,-200.,200.);
+  TH2D * XYact = new TH2D ("XYact","XYact",400,0.,400.,400,-200.,200.);
+  TH2D * XY5cm = new TH2D ("XY5cm","XY5cm",400,0.,400.,400,-200.,200.);
+  TH2D * XY10cm = new TH2D ("XY10cm","XY10cm",400,0.,400.,400,-200.,200.);
+  TH2D * XYscb = new TH2D ("XYscb","XYscb",400,0.,400.,400,-200.,200.);
+
+  TH2D * XYscb2cm = new TH2D ("XYscb2cm","XYscb2cm",400,0.,400.,400,-200.,200.);
+
+
+  TH2D * XZ10cm = new TH2D ("XZ10cm","XZ10cm",400,0.,400.,2000,-400.,1600.);
+  TH2D * XZ5cm = new TH2D ("XZ5cm","XZ5cm",400,0.,400.,2000,-400.,1600.);
+  TH2D * XZact = new TH2D ("XZact","XZact",400,0.,400.,2000,-400.,1600.);
+  TH2D * XZscb = new TH2D ("XZscb","XZscb",400,0.,400.,2000,-400.,1600.);
+
+  TH2D * XZscb2cm = new TH2D ("XZscb2cm","XZscb2cm",400,0.,400.,2000,-400.,1600.);
+
   TRandom3 *r3=new TRandom3();
   r3->SetSeed(0);
 
@@ -41,9 +49,18 @@ void random_vtx(){
   Double_t count_act = 0.;
   Double_t count_10cm = 0.;
 
+  Double_t count_scb2cm = 0.;
+
   TVector3 pt(40., 40., 50.);
 
-  Int_t tot = 100000;
+
+
+  //vector<TGeoPolygon *> ply_vec;
+  //  Bool_t testbool = load_scb(ply_vec);
+
+  //cout << "sizeof ply_vec  " << ply_vec.size() << endl;
+
+  Int_t tot = 10000000;
 
   for (Int_t i = 0; i < tot; i++){
     //x btw 0,400
@@ -58,14 +75,57 @@ void random_vtx(){
     
     pt.SetXYZ(x,y,z);
 
-    if (is_contained(10.,pt)) count_10cm+=1.;
-    if (is_contained(5.,pt)) count_5cm+=1.;
-    if (is_contained_scb(0.,pt)) count_scb+=1.;
-    if (is_contained(0.,pt)) count_act+=1.;
+    if (is_contained(10.,pt)) {
+      count_10cm+=1.;
+      XY10cm->Fill(x,y);
+      XZ10cm->Fill(x,z);
+    }
+    if (is_contained(5.,pt)) {
+      count_5cm+=1.;
+      XY5cm->Fill(x,y);
+      XZ5cm->Fill(x,z);
+    }
+    if (is_contained_scb(0.,pt)) {
+      count_scb+=1.;
+      XYscb->Fill(x,y);
+      XZscb->Fill(x,z);
+    }
+    if (is_contained(0.,pt)) {
+      count_act+=1.;
+      XYact->Fill(x,y);
+      XZact->Fill(x,z);
+    }
+    if (is_contained_scb(2.,pt)) {
+      count_scb2cm+=1.;
+      XYscb2cm->Fill(x,y);
+      XZscb2cm->Fill(x,z);
+    }
   }
-  cout << "total points: " << tot << " , active vol: "<< count_act <<" , 5cm fid : " << count_5cm <<" , 10cm fid : " << count_10cm << " , scb : " << count_scb << endl; 
-  cout << "total points: " << tot << " , active vol : " <<(Double_t)count_act/tot<< " , 5cm fid : " <<(Double_t)count_5cm/tot << " , 10cm fid : " <<(Double_t)count_10cm/tot << " , scb : " << (Double_t)count_scb/tot << endl;
-  //gRandom= r3;
+
+  auto cxy10 = new TCanvas("cxy10","cxy10");
+  cxy10->cd();
+  XY10cm->Draw("colz");
+  auto cxz10 = new TCanvas("cxz10","cxz10");
+  cxz10->cd();
+  XZ10cm->Draw("colz");
+
+  auto cxyscb = new TCanvas("cxyscb","cxyscb");
+  cxyscb->cd();
+  XYscb->Draw("colz");
+  auto cxzscb = new TCanvas("cxzscb","cxzscb");
+  cxzscb->cd();
+  XZscb->Draw("colz");
+
+  auto cxyscb2cm = new TCanvas("cxyscb2cm","cxyscb2cm");
+  cxyscb2cm->cd();
+  XYscb2cm->Draw("colz");
+  auto cxzscb2cm = new TCanvas("cxzscb2cm","cxzscb2cm");
+  cxzscb2cm->cd();
+  XZscb2cm->Draw("colz");
+
+  cout << "total points: " << tot << " , active vol: "<< count_act <<" , 5cm fid : " << count_5cm <<" , 10cm fid : " << count_10cm << " , scb : " << count_scb << " , scb2cm : " << count_scb2cm<< endl; 
+  cout << "total points: " << tot << " , active vol : " <<(Double_t)count_act/tot<< " , 5cm fid : " <<(Double_t)count_5cm/tot << " , 10cm fid : " <<(Double_t)count_10cm/tot << " , scb : " << (Double_t)count_scb/tot << " , scb2cm : " << (Double_t)count_scb2cm/tot << endl;
+
 
 }
 
