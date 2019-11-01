@@ -15,7 +15,7 @@ root -l
 sce()
 ```
 
-# to test fiducial volume 
+# to count passing events in your analysis file (change the input file and tree input as needed)
 ```
 root -l
 .L cutflow.C
@@ -32,9 +32,4 @@ cuts(5., 0., true, false)
 ```
 
 
-# to throw random vertices and count them
-```
-root -l
-.L cutflow.C
-random_vtx()
-```
+
