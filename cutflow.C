@@ -13,15 +13,6 @@
 
 using namespace std;
 
-TFile *f_ncdeltarad = new TFile("ncdeltarad_overlay_run1_v19.4.root");
-TFile *f_ncpi0 = new TFile("ncpi0_overlay_run1_v19.4.root");
-
-TDirectory* dir_ncdeltarad = (TDirectory*)f_ncdeltarad->Get("singlephoton");
-TDirectory* dir_ncpi0 = (TDirectory*)f_ncpi0->Get("singlephoton");
-
-TTree* tree_ncdeltarad = (TTree*)dir_ncdeltarad->Get("vertex_tree");
-TTree* tree_ncpi0 = (TTree*)dir_ncpi0->Get("vertex_tree");
-
 
 void random_vtx(){
 
@@ -175,6 +166,12 @@ void cuts2D(){
 }
 
 Double_t cuts(Double_t fid_cut, Double_t trk_cut, Bool_t isdelta, Bool_t plots){
+
+  TFile *f_ncdeltarad = new TFile("ncdeltarad_overlay_run1_v19.4.root");
+  TFile *f_ncpi0 = new TFile("ncpi0_overlay_run1_v19.4.root");
+
+  TDirectory* dir_ncdeltarad = (TDirectory*)f_ncdeltarad->Get("singlephoton");
+  TDirectory* dir_ncpi0 = (TDirectory*)f_ncpi0->Get("singlephoton");
 
   TTree* tree;
   if(isdelta){

@@ -1,5 +1,13 @@
 # fidv
 
+# Generate random vertices and check each volumes
+```
+root -l
+.L cutflow.C
+random_vtx()
+```
+
+
 # to test space charge boundary
 ```
 root -l
