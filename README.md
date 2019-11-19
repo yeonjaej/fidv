@@ -9,6 +9,7 @@ random_vtx()
 
 
 # to test space charge boundary
+literature for scb (ub DocDB: 26423)
 ```
 root -l
 .L cutflow.C
