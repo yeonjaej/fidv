@@ -14,6 +14,51 @@
 using namespace std;
 
 
+void dist_test(){
+
+
+  TH1D * h_dist_scb = new TH1D ("h_dist_scb","h_dist_scb",200,0.,200.);
+
+  TRandom3 *r3=new TRandom3();
+  r3->SetSeed(0);
+
+
+
+  TVector3 pt(40., 40., 50.);
+
+
+
+  //vector<TGeoPolygon *> ply_vec;
+  //  Bool_t testbool = load_scb(ply_vec);
+
+  //cout << "sizeof ply_vec  " << ply_vec.size() << endl;
+
+  Int_t tot = 10000;
+
+  for (Int_t i = 0; i < tot; i++){
+    //x btw 0,400
+    Double_t x = r3->Rndm();
+    x*=260.;
+    Double_t y = r3->Rndm();
+    y*=233.;
+    y-=116.5;
+    Double_t z = r3->Rndm();
+    z*=1100.;
+    //z-=400.;
+    
+    pt.SetXYZ(x,y,z);
+    cout << "dist : " << dist_scb(pt) << endl;
+    if (dist_scb(pt)<-0.){
+      cout << "X: "<<pt.X() << "Y: "<<pt.Y() << "X: "<<pt.Z() << endl;
+    }
+    if (dist_scb(pt) > 0.){
+      h_dist_scb->Fill(dist_scb(pt));
+    }
+  }
+  h_dist_scb->Draw();
+
+}
+
 void random_vtx(){
 
   TH2D * totalXY = new TH2D ("totalXY","totalXY",400,0.,400.,400,-200.,200.);
