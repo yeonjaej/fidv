@@ -165,7 +165,7 @@ bool is_contained_scb(Double_t cut, TVector3 pt){
 
   //TGeoManager *geom = new TGeoManager("simple1", "Simple geometry");
 
-  if (!is_contained(0., pt)) return 0; // is it in active volume?
+  if (!is_contained(cut, pt)) return 0; // is it in active volume from the cut? 
 
   Int_t z_idx = (Int_t)pt.Z()/100;
 
